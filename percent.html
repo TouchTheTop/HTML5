@@ -1,0 +1,124 @@
+<!DOCTYPE HTML>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>percent</title>
+	</head>
+
+	<body>
+		<canvas id="per30" width="200px" height="200px"></canvas>
+		<canvas id="per60" width="200px" height="200px"></canvas>
+		<canvas id="per90" width="200px" height="200px"></canvas>
+
+		<script>
+			var draw_per = function(id, percent, rx, ry) {
+				var canvas = document.getElementById(id);
+				var ctx = canvas.getContext('2d');
+
+				var rx = parseFloat(rx),
+					ry = parseFloat(ry);
+
+				if(!canvas.getContext) {
+					alert('您的浏览器暂不支持canvas！');
+					return
+				}
+
+				//初始文案样式
+				function initText() {
+					ctx.font = 'normal 30px 微软雅黑'
+					ctx.textAlign = 'center';
+					ctx.fillStyle = 'white';
+					ctx.textBaseline = 'middle';
+				}
+
+				//画中心圆
+				function Cicle() {
+					ctx.beginPath();
+					ctx.strokeStyle = "#d8d8d8";
+					ctx.lineWidth=15;  //利用外围端点圆来消除锯齿
+					ctx.arc(rx, ry, 50, 0, Math.PI * 2, true);
+					ctx.closePath();
+
+					ctx.fillStyle = 'gold';
+					ctx.fill();
+					ctx.stroke();
+
+					initText();
+					ctx.fillText(percent, parseFloat(rx) - 5, ry, 100);
+					ctx.font = 'bold 14px 微软雅黑'
+					ctx.fillText('%', rx + 20, ry + 5, 20);
+				}
+
+				//画外围进度环
+				function process() {
+
+					var angle = Math.PI * parseFloat(percent) / 50.0;
+					var dx = rx + 60 * Math.sin(angle);
+					var dy = ry - 60 * Math.cos(angle);
+
+					ctx.beginPath();
+					ctx.lineWidth = 15; //进度环粗细
+					var lingrad2 = ctx.createLinearGradient(500, 100, dx, dy + 10);
+					lingrad2.addColorStop(1, '#00ABEB');
+					lingrad2.addColorStop(0.5, 'rgba(0,0,0,0)');
+					ctx.arc(rx, ry, 60, Math.PI * 1.5, Math.PI * 1.5 + Math.PI * parseFloat(percent) / 100 * 2, false);
+					ctx.strokeStyle = lingrad2;
+					ctx.stroke();
+
+					extraCicel(rx, parseInt(ry) - 100 + 40, 8, 1);
+					extraCicel(dx, dy, 8, 1);
+
+				}
+
+				//画进度两端的圆
+				function extraCicel(x, y, r, lw) {
+					ctx.beginPath();
+					ctx.lineWidth = parseInt(lw);
+					ctx.arc(parseFloat(x), parseFloat(y), parseInt(r), 0, Math.PI * 2, true);
+					ctx.strokeStyle = 'dodgerblue';
+					ctx.closePath();
+					ctx.fill();
+					ctx.stroke();
+				}
+
+				return {
+					Cicle: Cicle,
+					process: process,
+					start: start
+
+				}
+			}
+
+			/**
+			 * 
+			 * @param {Object} id  //canvas id
+			 * @param {Object} percent  // percent
+			 * @param {Object} rx  //圆心 x
+			 * @param {Object} ry  //圆心 y
+			 */
+			function start(id, percent, rx, ry) {
+				var i = 0;
+				var speed = 20; //速度   speed / percent
+				setInterval(function() {
+
+					if(i <= parseInt(percent)) {
+						var one = draw_per(id, i, parseInt(rx), parseInt(ry));
+						one.Cicle();
+						one.process();
+						i++;
+					} else
+						window.clearInterval();
+
+				}, speed);
+			}
+
+			start('per30', 30, 100, 100);
+
+			start('per60', 60, 100, 100);
+
+			start('per90', 90, 100, 100);
+		</script>
+	</body>
+
+</html>
