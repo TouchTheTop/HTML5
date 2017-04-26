@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>percent_Bar</title>
+		<style>
+			body {
+				padding: 0px;
+				margin: 0px;
+			}
+			
+			#row_1 {
+				position: absolute;
+				left: -7.5px;
+				top: 30px;
+			}
+			
+			#bars {
+				height: 100px;
+				position: relative;
+			}
+			#percent{
+				position: absolute;
+				left: 50px;
+				color: #ff7e00;
+				font-style: italic;
+			}
+			.box{
+				background-color: #807c7c;
+				width:200px;
+				height: 20px;;
+			}
+		</style>
+	</head>
+
+	<body><span id="percent"></span>
+		<div id="bars" style="margin-left: 100px;margin-top: 100px;">	
+			<div class="box">
+			<canvas id="bar_1" style="width: 200px;height: 20px;"></canvas>
+			</div>
+			<canvas id="row_1" width="15px" height="30px"></canvas>
+		</div>
+		<script>
+			//画条形
+			var bar = function() {
+				var canvas = document.getElementById('bar_1');
+				var w = parseFloat(canvas.width); //获取bar设置的宽度
+				var h = parseFloat(canvas.height); //获取bar设置的高度
+				var left = parseFloat(document.getElementById('row_1').width);
+				if(canvas.getContext) {
+					var ctx = canvas.getContext('2d');
+					ctx.fillStyle = 'yellowgreen';  //初始化 bar
+					ctx.fillRect(0, 0, w, h);
+				} else {
+					alert('您的浏览器暂不支持canvas！');
+					return;
+				}
+
+			}
+
+			//画指针
+			var row = function() {
+				var canvas = document.getElementById('row_1');
+				var w = parseFloat(canvas.width);   //获取row设置的宽度
+				var h = parseFloat(canvas.height);  //获取row设置的高度
+				var maxw = parseFloat(document.getElementById('bar_1').style.width);    //判断百分比用
+				var pl = parseFloat(document.getElementById('bars').style.marginLeft);  //组件距离左边距
+				var pt = parseFloat(document.getElementById('bars').style.marginTop);   //组件距离上边距
+				var percent = 0;
+
+				if(canvas.getContext) {
+					var ctx = canvas.getContext('2d');
+					
+					//勾画指针
+					ctx.beginPath();
+					ctx.moveTo(w / 2, 0);
+					ctx.lineTo(0, h * 0.4);
+					ctx.lineTo(0, h);
+					ctx.lineTo(w, h);
+					ctx.lineTo(w, h * 0.4);
+					ctx.fillStyle = 'royalblue';
+					ctx.fill();
+				} else {
+					alert('您的浏览器暂不支持canvas！');
+					return;
+				}
+
+				//拖拽事件
+				function addEvent() {
+					var isDown = false;
+
+					//判断指针是否选中
+					canvas.addEventListener('mousedown', function(evt) {
+						isDown = true;
+
+					}, false);
+					
+					//当鼠标移动时
+					document.getElementById('bars').addEventListener('mousemove', function(evt) {
+						if(isDown) {  //如果指针为   选中  状态
+							var len = evt.clientX - pl;
+							if(evt.clientX > pl && evt.clientX <= maxw+pl) {  //判断鼠标没有脱离 bar 的长度
+								canvas.style.marginLeft = evt.clientX - pl + 'px';  //设置指针的位置
+								percent = (len/maxw)*100;  
+								document.getElementById('bar_1').style.width = len + 'px';  		 //设置  bar 的长度					
+								document.getElementById('percent').innerHTML = parseInt(percent)+'%'; //设置百分比显示	
+								bar();  //重画 bar
+							}
+
+						}
+					}, false);
+					
+					//当鼠标从目标元素撤离时
+					document.getElementById('bars').addEventListener('mouseup', function() {
+						isDown = false;  //重置指针状态为   未选中
+					}, false);
+				}
+
+				addEvent();
+			}
+			bar();
+			row();
+		</script>
+	</body>
+
+</html>
