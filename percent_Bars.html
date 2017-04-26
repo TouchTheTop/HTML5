@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>percent_Bars</title>
+		<style>
+			body {
+				padding: 0px;
+				margin: 0px;
+			}
+			
+			.row {
+				position: absolute;
+				left: -7.5px;
+				top: 30px;
+				z-index: 1;
+			}
+			
+			.bars {
+				height: 100px;
+				position: relative;
+				width: 200px;
+			}
+			
+			.bar {
+				z-index: 1;
+				position: absolute;
+			}
+			
+			.percent {
+				position: absolute;
+				left: 50px;
+				color: #ff7e00;
+				font-style: italic;
+				top: 60px;
+				padding: 5px;
+				background-color: #eaeaea;
+				border-radius: 3px;
+				border: 1px solid #e0e0e0;
+				border: 1px solid #EAEAEA;
+			}
+			
+			.percent:after {
+				content: ' ';
+				position: absolute;
+				top: 16px;
+				left: 3px;
+				background-color: #EAEAEA;
+				padding: 8px;
+				transform: rotate(61deg);
+				z-index: -1;
+				border: 1px solid #e0e0e0;
+			}
+			
+			.box {
+				background-color: #807c7c;
+				width: 200px;
+				height: 20px;
+				;
+			}
+			
+			.bars_child {
+				position: absolute;
+				top: 0px;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<span id="percent_1" class="percent"></span>
+		<span id="percent_2" class="percent" style="left: 10px;"></span>
+		<span id="percent_3" class="percent" style="left: 10px;"></span>
+		
+		<!--percent 为初始化状态-->
+		<div id="bars_1" class="bars" style="margin-left: 100px;margin-top: 100px;">
+			<div class="box">
+				<canvas id="bar_1" class="bar" style="width: 200px;height: 20px;" percent="30"></canvas>
+			</div>
+			<canvas id="row_1" class="row" width="15px" height="30px"></canvas>
+		</div>
+
+		<div id="bars_2" class="bars bars_child" style="margin-left: 100px;margin-top: 100px;">
+			<div class="box">
+				<canvas id="bar_2" class="bar" style="width: 200px;height: 20px;" percent="50"></canvas>
+			</div>
+			<canvas id="row_2" class="row" width="15px" height="30px"></canvas>
+		</div>
+
+		<div id="bars_3" class="bars bars_child" style="margin-left: 100px;margin-top: 100px;">
+			<div class="box">
+				<canvas id="bar_3" class="bar" style="width: 200px;height: 20px;" percent="80"></canvas>
+			</div>
+			<canvas id="row_3" class="row" width="15px" height="30px"></canvas>
+		</div>
+
+		<script>
+			window.onload = function() {
+				var box = document.getElementsByClassName('bar');
+				var barsNum = box.length;
+				for(var i = 1; i <= barsNum; i++) {
+					box[i - 1].style.zIndex = barsNum - i + 1;
+				}
+
+			}
+			//画条形
+			var bar = function(id, color) {
+				var canvas = document.getElementById(id),
+					w = parseFloat(canvas.width), //获取bar设置的宽度
+					h = parseFloat(canvas.height), //获取bar设置的高度
+					left = parseFloat(document.getElementById('row_1').width),
+					initPer = parseFloat(canvas.getAttribute('percent'));
+
+				if(canvas.getContext) {
+					var ctx = canvas.getContext('2d');
+					ctx.fillStyle = color; //初始化 bar
+					if(!color)  //已拖拽状态
+						ctx.fillRect(0, 0, w, h);
+					else  //初始状态
+						ctx.fillRect(0, 0, w * initPer / 100, h);
+				} else {
+					alert('您的浏览器暂不支持canvas！');
+					return;
+				}
+
+			}
+
+			//画指针
+			var row = function(id, color) {
+				var canvas = document.getElementById(id),
+					w = parseFloat(canvas.width), //获取row设置的宽度
+					h = parseFloat(canvas.height), //获取row设置的高度
+					tag = id.split('_')[1], //动态获取id
+					barsid = "bars_" + tag,
+					barid = "bar_" + tag,
+					percentid = "percent_" + tag,
+					maxw = parseFloat(document.getElementById(barid).style.width), //判断百分比用
+					initPer = parseFloat(document.getElementById(barid).getAttribute('percent')),
+					pl = parseFloat(document.getElementById(barsid).style.marginLeft), //组件距离左边距
+					pt = parseFloat(document.getElementById(barsid).style.marginTop), //组件距离上边距
+					percent = 0;
+
+				document.getElementById('row_' + tag).style.marginLeft = maxw * initPer / 100 + 'px';
+				if(canvas.getContext) {
+					var ctx = canvas.getContext('2d');
+
+					//勾画指针
+					ctx.beginPath();
+					ctx.moveTo(w / 2, 0);
+					ctx.lineTo(0, h * 0.4);
+					ctx.lineTo(0, h);
+					ctx.lineTo(w, h);
+					ctx.lineTo(w, h * 0.4);
+					ctx.fillStyle = color;
+					ctx.fill();
+				} else {
+					alert('您的浏览器暂不支持canvas！');
+					return;
+				}
+
+				//拖拽事件
+				function addEvent() {
+					var isDown = false;
+
+					//判断指针是否选中
+					canvas.addEventListener('mousedown', function(evt) {
+						isDown = true;
+
+					}, false);
+
+					//当鼠标移动时
+					document.getElementById(barsid).addEventListener('mousemove', function(evt) {
+						if(isDown) { //如果指针为   选中  状态
+							var len = evt.clientX - pl;
+
+							var tagPre = parseInt(tag) - 1, //if tagPre > 0 代表左边有指针
+								tagNext = parseInt(tag) + 1, //if !document.getElementById('bar_'+tagNext):true 代表右边有指针
+								leftP = pl,
+								rightP = pl + maxw;
+
+							console.log(tagNext);
+							if(document.getElementById('bar_' + tagNext)) {
+								rightP = pl + parseFloat(document.getElementById('row_' + tagNext).style.marginLeft) - w;
+							}
+							if(tagPre > 0) {
+								if(!document.getElementById('row_' + tagPre).style.marginLeft)
+									document.getElementById('row_' + tagPre).style.marginLeft = 0;
+								leftP = pl + parseFloat(document.getElementById('row_' + tagPre).style.marginLeft) + w;
+							}
+
+							console.log('left' + leftP + '------' + 'right' + rightP);
+							console.log(leftP);
+							if(evt.clientX > pl && evt.clientX <= maxw + pl && evt.clientX > leftP && evt.clientX < rightP) { //判断鼠标没有脱离 bar 的长度
+
+								var barid = "bar_" + tag;
+								canvas.style.marginLeft = evt.clientX - pl + 'px'; //设置指针的位置
+								if(tagPre <= 0)
+									percent = (len / maxw) * 100;
+								else
+									percent = ((len - parseFloat(document.getElementById('row_' + tagPre).style.marginLeft)) / maxw) * 100;
+								document.getElementById(barid).style.width = len + 'px'; //设置  bar 的长度		
+								document.getElementById('percent_' + tag).style.left = pl + len - 8 + 'px';
+								document.getElementById(percentid).innerHTML = parseInt(percent) + '%'; //设置百分比显示									
+								bar(barid); //重画 bar
+							}
+
+						}
+					}, false);
+
+					//当鼠标从目标元素撤离时
+					document.getElementById(barsid).addEventListener('mouseup', function() {
+						isDown = false; //重置指针状态为   未选中
+					}, false);
+				}
+
+				addEvent();
+			}
+			//传入id 和 颜色
+			bar('bar_1', '#13acf5'); //画条形
+			bar('bar_2', '#ffba51'); 
+			bar('bar_3', 'red');
+			row('row_1', '#13acf5'); //画指针
+			row('row_2', '#ffba51');
+			row('row_3', 'red');
+		</script>
+	</body>
+
+</html>
