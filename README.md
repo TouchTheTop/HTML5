@@ -13,3 +13,9 @@
 ![image](https://github.com/TouchTheTop/HTML5/blob/master/20170426164512.png)
 
 >代码:percent_Bars.html
+
+
+# HTML5 canvas时钟
+![image](https://github.com/TouchTheTop/HTML5/blob/master/img/20170502144855.png)
+
+>代码:clock.html
